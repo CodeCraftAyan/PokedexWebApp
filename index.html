@@ -119,6 +119,8 @@
 
                 // Show the pokemon details after fetching data
                 document.getElementById('pokemonDetails').style.display = 'block';
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } catch (error) {
                 alert(`Pokemon not found. Please try again.`);
             }
