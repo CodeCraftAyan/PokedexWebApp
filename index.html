@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <title>PokeDex</title>
 </head>
 <body>
-    <div class="max-w-3xl mx-auto p-5">
+    <main class="max-w-2xl mx-auto p-10">
         <description-container>
             <div>
                 <h1 class="font-bold text-3xl text-rose-600">Pokédex</h1>
@@ -17,97 +16,152 @@
         </description-container>
         <search>
             <div class="flex justify-center items-center p-4">
-                <form id="pokemonSearchForm" class="flex space-x-2 bg-white border border-gray-300 rounded-md shadow-lg p-2 w-full max-w-md">
-                    <input type="search" name="search" id="pokemonInput" placeholder="Search Pokémon..."
-                        class="px-4 py-2 flex-1 border-none outline-none rounded-sm shadow-inner focus:ring-2 focus:ring-rose-400 transition w-full max-w-xs sm:max-w-md">
-                    <button type="submit" class="px-5 py-2 bg-rose-500 text-white font-semibold rounded-sm shadow-md hover:bg-rose-600 transition cursor-pointer">Search</button>
+                <form id="pokemonSearchForm" class="flex space-x-2">
+                    <input type="search" name="search" id="pokemonInput" placeholder="Search Pokemon by Name or ID" class="px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    <button type="submit" class="px-4 py-2 bg-rose-400 text-white rounded-sm cursor-pointer hover:bg-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500">Search</button>
                 </form>
-            </div>                        
+            </div>            
         </search>
-    </div>
 
-    <pokemon-details id="pokemonDetails" style="display: none;">
-        <main class="flex flex-col md:flex-row justify-between gap-6 p-5">
-            <section class="flex-1">
+        <pokemon-details id="pokemonDetails" style="display: none;">
+            <section>
                 <div>
                     <div class="mt-6 flex justify-center items-center">
                         <img id="pokemonImage" src="" alt="Pokemon Image" class="h-60 w-60 p-2 rounded-lg shadow-lg">
                     </div>
-                    
                     <div class="flex gap-3 py-4 px-2 justify-center">
                         <h1 id="pokemonName" class="font-bold text-xl"></h1>
                         <p id="pokemonID" class="text-2xl text-gray-400"></p>
                     </div>
-        
                     <div id="evolutions" class="flex gap-5 flex-wrap justify-center"></div>
-        
-                    <div class="flex flex-wrap gap-6 justify-center py-4">
-                        <!-- Pokemon Description Card -->
-                        <div class="w-full max-w-lg bg-gradient-to-br from-blue-400 to-purple-500 p-6 rounded-lg shadow-lg text-white">
-                            <h2 class="text-lg font-semibold mb-2">Description</h2>
-                            <p id="pokemonDescription" class="text-sm"></p>
-                        </div>
-                    
-                        <!-- Pokemon Stats Card -->
-                        <div class="w-full max-w-lg bg-white p-6 rounded-xl shadow-md flex justify-between items-center border border-gray-200">
-                            <div class="flex flex-col items-center">
-                                <h3 class="text-gray-400 text-sm font-medium">Height</h3>
-                                <p id="pokemonHeight" class="text-md font-semibold text-gray-800"></p>
-                            </div>
-                            <div class="w-px bg-gray-300 h-12"></div>
-                            <div class="flex flex-col items-center">
-                                <h3 class="text-gray-400 text-sm font-medium">Weight</h3>
-                                <p id="pokemonWeight" class="text-md font-semibold text-gray-800"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section class="flex-1">
-                <div>
-                    
                     <div class="flex flex-wrap gap-5 justify-center py-4">
                         <div id="types" class="flex gap-2"></div>
                         <div id="stats" class="grid grid-cols-2 gap-4 bg-white p-4 rounded-lg shadow-md"></div>
                     </div>
-                    
-                    <div class="flex flex-wrap gap-6 justify-center py-6">
-                        <!-- Abilities Section -->
-                        <div id="abilities" class="w-full max-w-lg bg-white py-5 px-2 rounded-xl shadow-md border border-gray-200">
-                            <h2 class="font-bold text-lg text-gray-800 mb-3 text-center">ABILITIES</h2>
-                            <ul class="list-none flex flex-wrap gap-1 justify-center">
-                                <!-- Abilities will be dynamically added here -->
-                            </ul>
-                        </div>
-                    
-                        <!-- Attacks Section -->
-                        <div id="attacks" class="w-full max-w-lg bg-white py-5 px-2 rounded-xl shadow-md border border-gray-200">
-                            <h2 class="font-bold text-lg text-gray-800 mb-3 text-center">ATTACKS</h2>
-                            <ul class="list-none flex flex-wrap gap-1 justify-center">
-                                <!-- Attacks will be dynamically added here -->
-                            </ul>
-                        </div>
-                    </div>  
+                    <div id="attacks" class="mt-4">
+                        <h2 class="font-bold text-lg">Attacks</h2>
+                        <ul class="list-none pl-6 flex flex-wrap gap-1"></ul>
+                    </div>
                 </div>
             </section>
-        </main>
-    </pokemon-details>
+        </pokemon-details>
+    </main>
 
-    <pokemon-cards>
-        <div class="p-5">
-            <div id="pokemon-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            </div>
-        </div>    
-    </pokemon-cards>
-        
-        <!-- Custom Alert -->
-        <div id="customAlert" class="hidden fixed top-0 left-0 w-full h-full bg-transparent bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm text-center">
-            <p id="customAlertMessage" class="text-gray-800 text-lg font-medium mb-4">Error message here</p>
-            <button onclick="hideCustomAlert()" class="px-4 py-2 bg-rose-400 text-white rounded-md hover:bg-red-500 cursor-pointer">Close</button>
-        </div>
-        </div>
+    <script>
+        const pokemonFetchData = async (query) => {
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${query.toLowerCase()}`);
+            return response.json();
+        };
 
-    <script src="script.js"></script>
+        const pokemonFetchEvolutionChain = async (speciesUrl) => {
+            const speciesResponse = await fetch(speciesUrl);
+            const speciesData = await speciesResponse.json();
+            const chainResponse = await fetch(speciesData.evolution_chain.url);
+            return (await chainResponse.json()).chain;
+        }
+
+        const renderEvolutionChain = async (chain) => {
+            const evolutions = [];
+            let current = chain;
+
+            while (current) {
+                const speciesResponse = await fetch(current.species.url);
+                const speciesData = await speciesResponse.json();
+
+                const pokemonResponse = await fetch(speciesData.varieties[0].pokemon.url);
+                const pokemonData = await pokemonResponse.json();
+                const sprite = pokemonData.sprites.other['official-artwork'].front_default;
+
+                const bgColor = getRandomBackgroundColor();
+                evolutions.push({ name: current.species.name, image: sprite, backgroundColor: bgColor });
+                current = current.evolves_to[0];
+            }
+
+            return evolutions.map(evo => `
+                <div class="flex flex-col items-center">
+                    <img src="${evo.image}" alt="${evo.name}" class="h-30 w-30 rounded-lg shadow-md ${evo.backgroundColor}">
+                    <p class="text-gray-700 font-semibold">${evo.name.toUpperCase()}</p>
+                </div>
+            `).join('');
+        };
+
+        const renderPokemon = async (query) => {
+            try {
+                const data = await pokemonFetchData(query);
+
+                document.getElementById('pokemonName').textContent = data.name.toUpperCase();
+                document.getElementById('pokemonID').textContent = `#${data.id}`;
+
+                document.getElementById('pokemonImage').src = data.sprites.other['official-artwork'].front_default;
+
+                const types = data.types.map(type => `<span class="text-white w-20 px-2 py-1 rounded-lg" style="background-color: ${getTypeColor(type.type.name)}">${type.type.name.toUpperCase()}</span>`).join('');
+                document.getElementById('types').innerHTML = types;
+
+                const stats = data.stats.map(stat => `
+                    <div>
+                        <p class="text-gray-700 font-semibold">${stat.stat.name}</p>
+                        <p class="text-gray-500">${stat.base_stat}</p>
+                    </div>
+                `).join('');
+                document.getElementById('stats').innerHTML = stats;
+
+                const evolutionChain = await pokemonFetchEvolutionChain(data.species.url);
+                const evolutionHTML = await renderEvolutionChain(evolutionChain);
+                document.getElementById('evolutions').innerHTML = evolutionHTML;
+                
+                const attacks = data.moves.slice(0, 10).map(move => {
+                    const attackColor = getRandomAttackColor();
+                    return `<li class="py-2 px-4 rounded-sm text-white ${attackColor}">${move.move.name.charAt(0).toUpperCase() + move.move.name.slice(1)}</li>`;
+                }).join('');
+                document.getElementById('attacks').querySelector('ul').innerHTML = attacks;
+
+                // Show the pokemon details after fetching data
+                document.getElementById('pokemonDetails').style.display = 'block';
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (error) {
+                alert(`Pokemon not found. Please try again.`);
+            }
+        }
+
+        const getTypeColor = (type) => {
+            const typeColors = {
+                fire: '#F08030',
+                water: '#6890F0',
+                grass: '#78C850',
+                electric: '#F8D030',
+                normal: '#A8A878',
+                bug: '#A8B820',
+                poison: '#A040A0',
+            };
+            return typeColors[type] || '#A8A878';
+        };
+
+        const getRandomBackgroundColor = () => {
+            const colors = [
+                'bg-red-200', 'bg-blue-200', 'bg-green-200', 'bg-yellow-200', 
+                'bg-purple-200', 'bg-pink-200', 'bg-indigo-200', 'bg-teal-200', 
+                'bg-violet-200', 'bg-slate-200', 'bg-sky-200', 'bg-zinc-200', 
+                'bg-rose-200', 'bg-orange-200', 'bg-emerald-200', 'bg-fuchsia-200'  
+            ]
+            return colors[Math.floor(Math.random() * colors.length)];
+        };
+
+        const getRandomAttackColor = () => {
+            const colors = [
+                'bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-yellow-400', 
+                'bg-purple-400', 'bg-pink-400', 'bg-indigo-400', 'bg-teal-400', 
+                'bg-violet-400', 'bg-slate-400', 'bg-sky-400', 'bg-zinc-400', 
+                'bg-rose-400', 'bg-orange-400', 'bg-emerald-400', 'bg-fuchsia-400'  
+            ]
+            return colors[Math.floor(Math.random() * colors.length)];
+        };
+
+        document.getElementById('pokemonSearchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = document.getElementById('pokemonInput').value.trim();
+            renderPokemon(query);
+        });
+    </script>
 </body>
 </html>
