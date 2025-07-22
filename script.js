@@ -84,6 +84,9 @@ const pokemonFetchData = async (query) => {
 
       // Show the pokemon details after fetching data
       document.getElementById('pokemonDetails').style.display = 'block';
+
+      // For Scrollback to top of the screen
+      window.scrollTo({ top: 0, behavior: 'smooth' }); 
   } catch (error) {
       showCustomAlert('Pokemon not found. Please try again.');
   }
