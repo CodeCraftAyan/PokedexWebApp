@@ -1,3 +1,124 @@
+let currentLanguage = 'en';
+let currentPokemonQuery = null;
+const localizationCache = new Map();
+const languageCodes = {
+    en: ['en'],
+    ja: ['ja-Hrkt', 'ja']
+};
+
+const statLabelFallbacks = {
+    en: {
+        hp: 'HP',
+        attack: 'Attack',
+        defense: 'Defense',
+        'special-attack': 'Special Attack',
+        'special-defense': 'Special Defense',
+        speed: 'Speed',
+        accuracy: 'Accuracy',
+        evasion: 'Evasion'
+    },
+    ja: {
+        hp: 'HP',
+        attack: 'こうげき',
+        defense: 'ぼうぎょ',
+        'special-attack': 'とくこう',
+        'special-defense': 'とくぼう',
+        speed: 'すばやさ',
+        accuracy: 'めいちゅう',
+        evasion: 'かいひ'
+    }
+};
+
+const uiTranslations = {
+    en: {
+        appTitle: 'Pokedex',
+        pokemonFact: 'The Pokedex is your ultimate Pokémon companion, offering detailed information on every Pokémon, including stats, abilities, and evolution paths, making it easy to explore and enhance your Pokémon journey.',
+        searchPlaceholder: 'Search Pokémon...',
+        searchButton: 'Search',
+        descriptionLabel: 'Description',
+        heightLabel: 'Height',
+        weightLabel: 'Weight',
+        abilitiesLabel: 'ABILITIES',
+        attacksLabel: 'ATTACKS',
+        closeAlertBtn: 'Close',
+        toggleButton: '🇯🇵 日本語',
+        notFound: 'Pokemon not found. Please try again.',
+        noDescription: 'No description available.'
+    },
+    ja: {
+        appTitle: 'ポケデックス',
+        pokemonFact: 'ポケデックスは、すべてのポケモンのステータス、特性、進化情報を確認できる、あなたの冒険に欠かせないパートナーです。',
+        searchPlaceholder: 'ポケモンを検索...',
+        searchButton: '検索',
+        descriptionLabel: '説明',
+        heightLabel: '高さ',
+        weightLabel: '重さ',
+        abilitiesLabel: 'とくせい',
+        attacksLabel: 'わざ',
+        closeAlertBtn: '閉じる',
+        toggleButton: '🇺🇸 English',
+        notFound: 'ポケモンが見つかりませんでした。もう一度お試しください。',
+        noDescription: '説明がありません。'
+    }
+};
+
+const applyUiLanguage = () => {
+    const t = uiTranslations[currentLanguage];
+    document.documentElement.lang = currentLanguage;
+    document.getElementById('appTitle').textContent = t.appTitle;
+    document.getElementById('pokemonFact').textContent = t.pokemonFact;
+    document.getElementById('pokemonInput').placeholder = t.searchPlaceholder;
+    document.getElementById('searchButton').textContent = t.searchButton;
+    document.getElementById('descriptionLabel').textContent = t.descriptionLabel;
+    document.getElementById('heightLabel').textContent = t.heightLabel;
+    document.getElementById('weightLabel').textContent = t.weightLabel;
+    document.getElementById('abilitiesLabel').textContent = t.abilitiesLabel;
+    document.getElementById('attacksLabel').textContent = t.attacksLabel;
+    document.getElementById('closeAlertBtn').textContent = t.closeAlertBtn;
+    document.getElementById('langToggle').textContent = t.toggleButton;
+};
+
+const toEnglishLabel = (value) => value
+    .split('-')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
+const getLocalizedNameFromEntries = (entries) => {
+    if (!Array.isArray(entries)) return null;
+    const preferredCodes = languageCodes[currentLanguage] || [currentLanguage];
+    for (const code of preferredCodes) {
+        const match = entries.find(item => item.language?.name === code);
+        if (match?.name) return match.name;
+    }
+    return null;
+};
+
+const getLocalizedResourceName = async (resourceUrl, fallbackName) => {
+    const cacheKey = `${currentLanguage}:${resourceUrl}`;
+    if (localizationCache.has(cacheKey)) {
+        return localizationCache.get(cacheKey);
+    }
+
+    try {
+        const response = await fetch(resourceUrl);
+        const data = await response.json();
+        const localized = getLocalizedNameFromEntries(data.names);
+        const value = localized || (currentLanguage === 'en' ? toEnglishLabel(fallbackName) : fallbackName);
+        localizationCache.set(cacheKey, value);
+        return value;
+    } catch {
+        return currentLanguage === 'en' ? toEnglishLabel(fallbackName) : fallbackName;
+    }
+};
+
+const getStatDisplayName = (statName, localizedValue) => {
+    const fallback = statLabelFallbacks[currentLanguage]?.[statName];
+    if (currentLanguage === 'ja') {
+        return fallback || localizedValue || statName;
+    }
+    return fallback || localizedValue || toEnglishLabel(statName);
+};
+
 const pokemonFetchData = async (query) => {
   const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${query.toLowerCase()}`);
   return response.json();
@@ -21,9 +142,10 @@ const pokemonFetchData = async (query) => {
       const pokemonResponse = await fetch(speciesData.varieties[0].pokemon.url);
       const pokemonData = await pokemonResponse.json();
       const sprite = pokemonData.sprites.other['official-artwork'].front_default;
+    const localizedName = getLocalizedNameFromEntries(speciesData.names) || current.species.name;
 
       const bgColor = getRandomBackgroundColor();
-      evolutions.push({ name: current.species.name, image: sprite, backgroundColor: bgColor });
+      evolutions.push({ name: localizedName, image: sprite, backgroundColor: bgColor });
       current = current.evolves_to[0];
   }
 
@@ -37,6 +159,7 @@ const pokemonFetchData = async (query) => {
 
   const renderPokemon = async (query) => {
   try {
+      currentPokemonQuery = query;
       const data = await pokemonFetchData(query);
 
       document.getElementById('pokemonName').textContent = data.name.toUpperCase();
@@ -44,12 +167,21 @@ const pokemonFetchData = async (query) => {
 
       document.getElementById('pokemonImage').src = data.sprites.other['official-artwork'].front_default;
 
-      const types = data.types.map(type => `<span class="text-white w-25 text-center px-2 py-1 rounded-lg" style="background-color: ${getTypeColor(type.type.name)}">${type.type.name.toUpperCase()}</span>`).join('');
+            const localizedTypes = await Promise.all(
+                data.types.map(type => getLocalizedResourceName(type.type.url, type.type.name))
+            );
+            const types = data.types.map((type, idx) => {
+                    const typeLabel = currentLanguage === 'en' ? localizedTypes[idx].toUpperCase() : localizedTypes[idx];
+                    return `<span class="text-white w-25 text-center px-2 py-1 rounded-lg" style="background-color: ${getTypeColor(type.type.name)}">${typeLabel}</span>`;
+            }).join('');
       document.getElementById('types').innerHTML = types;
 
-      const stats = data.stats.map(stat => `
+            const localizedStats = await Promise.all(
+                data.stats.map(stat => getLocalizedResourceName(stat.stat.url, stat.stat.name))
+            );
+            const stats = data.stats.map((stat, idx) => `
           <div>
-              <p class="text-gray-700 font-semibold">${stat.stat.name}</p>
+                            <p class="text-gray-700 font-semibold">${getStatDisplayName(stat.stat.name, localizedStats[idx])}</p>
               <p class="text-gray-500">${stat.base_stat}</p>
           </div>
       `).join('');
@@ -62,23 +194,38 @@ const pokemonFetchData = async (query) => {
       document.getElementById('pokemonHeight').textContent = `${(data.height / 10).toFixed(1)} m`;
       document.getElementById('pokemonWeight').textContent = `${(data.weight / 10).toFixed(1)} kg`;
 
-      // Fetch and display description
+      // Fetch and display description (and language-specific name)
       const speciesResponse = await fetch(data.species.url);
       const speciesData = await speciesResponse.json();
-      const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === "en");
-      const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\f/g, " ") : "No description available.";
-      document.getElementById('pokemonDescription').textContent = `${description}`;
+      const localizedPokemonName = getLocalizedNameFromEntries(speciesData.names);
+      if (localizedPokemonName) document.getElementById('pokemonName').textContent = localizedPokemonName;
+      const descriptionEntry = speciesData.flavor_text_entries.find(entry => (languageCodes[currentLanguage] || [currentLanguage]).includes(entry.language.name));
+    const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\f/g, " ") : uiTranslations[currentLanguage].noDescription;
+      document.getElementById('pokemonDescription').textContent = description;
 
       // Display Abilities
-      const abilities = data.abilities.map(ability => {
+      const localizedAbilities = await Promise.all(
+          data.abilities.map(ability => getLocalizedResourceName(ability.ability.url, ability.ability.name))
+      );
+      const abilities = data.abilities.map((ability, idx) => {
           const randomColor = getRandomAttackColor();  
-          return `<li class="py-2 px-4 rounded-sm ${randomColor} text-white">${ability.ability.name.charAt(0).toUpperCase() + ability.ability.name.slice(1)}</li>`;
+          const abilityName = currentLanguage === 'en'
+              ? toEnglishLabel(localizedAbilities[idx])
+              : localizedAbilities[idx];
+          return `<li class="py-2 px-4 rounded-sm ${randomColor} text-white">${abilityName}</li>`;
       }).join('');
       document.getElementById('abilities').querySelector('ul').innerHTML = abilities;
       
-      const attacks = data.moves.slice(0, 10).map(move => {
+            const attackMoves = data.moves.slice(0, 10);
+            const localizedMoves = await Promise.all(
+                attackMoves.map(move => getLocalizedResourceName(move.move.url, move.move.name))
+            );
+            const attacks = attackMoves.map((move, idx) => {
           const attackColor = getRandomAttackColor();
-          return `<li class="py-2 px-4 rounded-sm text-white ${attackColor}">${move.move.name.charAt(0).toUpperCase() + move.move.name.slice(1)}</li>`;
+                    const moveName = currentLanguage === 'en'
+                        ? toEnglishLabel(localizedMoves[idx])
+                        : localizedMoves[idx];
+                    return `<li class="py-2 px-4 rounded-sm text-white ${attackColor}">${moveName}</li>`;
       }).join('');
       document.getElementById('attacks').querySelector('ul').innerHTML = attacks;
 
@@ -88,7 +235,7 @@ const pokemonFetchData = async (query) => {
       // For Scrollback to top of the screen
       window.scrollTo({ top: 0, behavior: 'smooth' }); 
   } catch (error) {
-      showCustomAlert('Pokemon not found. Please try again.');
+      showCustomAlert(uiTranslations[currentLanguage].notFound);
   }
   }
 
@@ -184,3 +331,10 @@ const pokemonFetchData = async (query) => {
 }
 
 fetchPokemon();
+applyUiLanguage();
+
+document.getElementById('langToggle').addEventListener('click', () => {
+    currentLanguage = currentLanguage === 'en' ? 'ja' : 'en';
+    applyUiLanguage();
+    if (currentPokemonQuery) renderPokemon(currentPokemonQuery);
+});
